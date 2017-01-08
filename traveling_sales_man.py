@@ -1,110 +1,132 @@
 __author__ = 'David'
 import numpy as np
-import math
 import random as r
 import matplotlib.pylab as plt
 
+lengths = []
+
+
 def dis(a, b):
-    x_1= a[0]
-    x_2= b[0]
-    y_1= a[1]
-    y_2= b[1]
-    return np.sqrt((x_2-x_1)**2+(y_2-y_1)**2)
+    # gives us the distance between point a and b
+    return np.sqrt((b[0] - a[0]) ** 2 + (b[1] - a[1]) ** 2)
 
-def city_gen(x_lim,y_lim):
-    point=[]
-    point.append(r.randint(0, x_lim))
-    point.append(r.randint(0, y_lim))
-    return point
 
-def city_list_gen(number, x_lim, y_lim):
-    list=np.zeros(number*2)
-    list= list.reshape((number,2))
+def city_generator(x_lim, y_lim):
+    # generates a single point inside a given limits
+    city = (r.randint(0, x_lim), r.randint(0, y_lim))
+    return city
+
+
+def city_list_generator(number, x_lim, y_lim):
+    # generates the number of cites wanted in a given boundary
+    list_of_cites = np.zeros(number*2)
+    list_of_cites = list_of_cites.reshape((number, 2))
+
     for i in range(number):
-        list[i]=city_gen(x_lim, y_lim)
-    return list
+        list_of_cites[i]=city_generator(x_lim, y_lim)
 
-def curquite_distace(citys):
-    total_distnce = dis(citys[0], citys[len(citys)-1])
-    for i in range(len(citys)-1):
-        total_distnce = total_distnce+ dis(citys[i], citys[i+1])
-    return total_distnce
+    return list_of_cites
 
-def plot_route(citys):
-    x_cords=[]
-    y_cords=[]
-    
-    for i in range(len(citys)):
-        tempuray=citys[i]
-        x_cords.append(tempuray[0])
-        y_cords.append(tempuray[1])
-    
-    #join n point back up to 0 point
-    tempuray=citys[0]
-    x_cords.append(tempuray[0])
-    y_cords.append(tempuray[1])
+
+def circuit_distance(cites):
+    # gives the total distance of a given route
+    total_distance = dis(cites[0], cites[len(cites)-1])  # closing the route
+
+    for i in range(len(cites)-1):
+        total_distance = total_distance+ dis(cites[i], cites[i+1])
+    return total_distance
+
+
+def plot_route(cites):
+    # generates plot of a given route
+    x_cords = []
+    y_cords = []
+
+    for i in range(len(cites)):
+        # temporary is a point(two values)
+        temporary = cites[i]
+        x_cords.append(temporary[0])
+        y_cords.append(temporary[1])
+
+    # joins the first city up to the last
+    temporary = cites[0]
+    x_cords.append(temporary[0])
+    y_cords.append(temporary[1])
 
     plt.plot(x_cords, y_cords, ".")
     plt.plot(x_cords, y_cords, "-")
     plt.show()
 
-def new_route(citys):
-    test= np.copy(citys)
-    x=r.randint(0,len(test)-1)
-    y=r.randint(0,len(test)-1)
-    test[x]=citys[y]
-    test[y]=citys[x]
-    return test
+
+def new_route(cites):
+    # generates a new route by swapping the positions of two points in the list
+    new = np.copy(cites)
+    x = r.randint(0, len(new)-1)
+    y = r.randint(0, len(new)-1)
+    new[x] = cites[y]
+    new[y] = cites[x]
+    return new
 
 
-def new_route_accept(new_rout, old_route,tempature):
-    new= curquite_distace(new_rout)
-    old= curquite_distace(old_route)
-    if new <=old:
-        lenths.append(new)
+def new_route_accept(new_rout, old_route, temperature):
+    # finds the length of the new route and the old route
+    new_length = circuit_distance(new_rout)
+    old_length = circuit_distance(old_route)
+
+    # accepts if new length is shorter then the old
+    if new_length <= old_length:
+        lengths.append(new_length)
         return new_rout
 
+    # if not it accepts if the exp of the difference in distance divided by the current temperature
+    # is great then some random number between 0 and 1
     else:
-        h=new-old
+        difference = new_length-old_length
 
-        if np.exp(-h/tempature)> r.random():
-            lenths.append (new)
+        if np.exp(-difference/temperature) > r.random():
+            lengths.append(new_length)
             return new_rout
         else:
-            lenths.append(old)
+            lengths.append(old_length)
             return old_route
 
 
-def temp_schedule(temp,cooling_factor=.9999):
-    return temp*cooling_factor
+def temperature_schedule(temp, cooling_factor):
+    # this gives us a specific colling scheme
+    return temp * cooling_factor
 
-def pertange(start_temp, finished_temp, current_temp, cooling_factor,itterations):
-    print itterations/math.log(finished_temp/start_temp,cooling_factor)
 
-lenths=[]
 def main():
-    temps=[]
-    itteration=0
-    temp=250
-    citys=city_list_gen(100, 100, 100)
-    #total=math.log(finished_temp/start_temp,cooling_factor)
-    #citys= [[ 18.,  11.],[ 68.,  37.],[ 90.,  57.],[ 13.,  81.],[ 19.,  49.],[ 89.,  48.],[ 46.,  97.],[ 68.,  22.],[ 42.,  84.],[ 16.,  67.]]
-    print curquite_distace(citys)
-    
-    plot_route(citys)
-    while temp > 0.1:
-        temps.append(temp)
-        itteration+=1
-        new_rout = new_route(citys)
-        citys = new_route_accept(new_rout,citys, temp)
-        temp= temp_schedule(temp)
-        print temp
-    print curquite_distace(citys)
+    # initialising variables
+    temps = []
+    iterations = 0
+    temperature = 10
+    x_limit = 100
+    y_limit = 100
+    number_of_cities_wanted = 25
+    finishing_temperature = .1
+    cooling_factor = .9990
+    cites = city_list_generator(number_of_cities_wanted, x_limit, y_limit)
 
-    plt.plot(np.arange(itteration),temps)
-    plt.plot(np.arange(itteration),lenths)
+    print 'original distance is %f' % circuit_distance(cites)
+
+    # plot of the original route
+    plot_route(cites)
+
+    while temperature > finishing_temperature:
+        temps.append(temperature)
+        iterations += 1
+        new_rout = new_route(cites)
+        cites = new_route_accept(new_rout, cites, temperature)
+        temperature = temperature_schedule(temperature, cooling_factor)
+
+    print 'final distance is %f' % circuit_distance(cites)
+
+    plt.plot(np.arange(iterations), temps)
+    plt.plot(np.arange(iterations), lengths)
     plt.show()
-    plot_route(citys)
+    plot_route(cites)
 
 
-main()
+if __name__ == "__main__":
+    main()
