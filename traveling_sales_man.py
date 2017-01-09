@@ -100,12 +100,12 @@ def main():
     # initialising variables
     temps = []
     iterations = 0
-    temperature = 10
+    temperature = 100
     x_limit = 100
     y_limit = 100
-    number_of_cities_wanted = 25
-    finishing_temperature = .1
-    cooling_factor = .9990
+    number_of_cities_wanted = 20
+    finishing_temperature = .01
+    cooling_factor = .9999
     cites = city_list_generator(number_of_cities_wanted, x_limit, y_limit)
 
     print 'original distance is %f' % circuit_distance(cites)
