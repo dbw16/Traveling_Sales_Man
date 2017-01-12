@@ -39,11 +39,11 @@ def circuit_distance(cites):
     return total_distance
 
 
-def plot_route(cites):
+def plot_route(cites,name_of_graph):
     # generates plot of a given route
     x_cords = []
     y_cords = []
-
+    number_of_citys=len(cites)
     for i in range(len(cites)):
         # temporary is a point(two values)
         temporary = cites[i]
@@ -55,9 +55,12 @@ def plot_route(cites):
     x_cords.append(temporary[0])
     y_cords.append(temporary[1])
 
-    plt.plot(x_cords, y_cords, ".")
-    plt.plot(x_cords, y_cords, "-")
-    plt.show()
+    plt.plot(x_cords, y_cords, ".",label="Cities")
+    plt.plot(x_cords, y_cords, "-", label="Route")
+    plt.legend(loc="best")
+    plt.title(name_of_graph)
+    plt.savefig("%s.png" %name_of_graph)
+    plt.clf()
 
 
 def new_route(cites):
@@ -82,6 +85,9 @@ def swap_route(cities, x, y):
     cities[x] = temp_y
     cities[y] = temp_x
 
+
+# This allows the program to terminate if there has be no change in route length in many iteration
+# If the user picked good inital conditions it wont come into play
 number_of_no_switches = 0
 
 def cooling(cites, temp):
@@ -128,24 +134,39 @@ def cooling(cites, temp):
         number_of_no_switches += 1
 
 
+def read_in_list(file_name):
+    x = []
+    with open(file_name) as f:
+        for line in f:
+            y = line.split()
+            x.append(y)
+    cities = []
+    for i in range(len(x)):
+        cities.append((float(x[i][0]), float(x[i][1])))
+    return cities
+
+
 def main():
     # initialising variables
     iterations = 0
-    temperature = 1000
+    temperature = 100
     x_limit = 100
     y_limit = 100
-    number_of_cities_wanted = 10
-    finishing_temperature = .0000000000001
+    number_of_cities_wanted = 100
+    finishing_temperature = .00001
     cooling_factor = .9999
     total_iterations=math.log(finishing_temperature/temperature, cooling_factor)
 
     global number_of_no_switches
-    cites = city_list_generator(number_of_cities_wanted, x_limit, y_limit)
+
+    #cites = read_in_list('usa_city_xy.txt')
+    cites=city_list_generator(number_of_cities_wanted,x_limit,y_limit)
+
 
     print 'original distance is %f' % circuit_distance(cites)
 
     # plot of the original route
-    plot_route(cites)
+    plot_route(cites, "Random route between %i cities" % len(cites))
 
     while temperature > finishing_temperature:
         iterations += 1
@@ -165,7 +186,7 @@ def main():
 
     print 'final distance is %f' % circuit_distance(cites)
     print iterations
-    plot_route(cites)
+    plot_route(cites, "Optimal route between %i cities" % len(cites))
 
 
 if __name__ == "__main__":

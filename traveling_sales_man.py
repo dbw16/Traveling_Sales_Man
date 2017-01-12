@@ -37,11 +37,10 @@ def circuit_distance(cites):
     return total_distance
 
 
-def plot_route(cites):
+def plot_route(cites,name_of_graph):
     # generates plot of a given route
     x_cords = []
     y_cords = []
-
     for i in range(len(cites)):
         # temporary is a point(two values)
         temporary = cites[i]
@@ -53,9 +52,32 @@ def plot_route(cites):
     x_cords.append(temporary[0])
     y_cords.append(temporary[1])
 
-    plt.plot(x_cords, y_cords, ".")
-    plt.plot(x_cords, y_cords, "-")
-    plt.show()
+    plt.plot(x_cords, y_cords, ".",label="Cities")
+    plt.plot(x_cords, y_cords, "-", label="Route")
+    plt.legend(loc="best")
+    plt.title(name_of_graph)
+    plt.savefig("%s.png" % name_of_graph)
+    plt.clf()
+
+def plot_cities(cites,name_of_graph):
+    x_cords = []
+    y_cords = []
+    for i in range(len(cites)):
+        # temporary is a point(two values)
+        temporary = cites[i]
+        x_cords.append(temporary[0])
+        y_cords.append(temporary[1])
+
+    # joins the first city up to the last
+    temporary = cites[0]
+    x_cords.append(temporary[0])
+    y_cords.append(temporary[1])
+
+    plt.plot(x_cords, y_cords, ".",label="Cities")
+    plt.legend(loc="best")
+    plt.title(name_of_graph)
+    plt.savefig("%s.png" % name_of_graph)
+    plt.clf()
 
 
 def new_route(cites):
@@ -100,10 +122,10 @@ def main():
     # initialising variables
     temps = []
     iterations = 0
-    temperature = 100
+    temperature = 500
     x_limit = 100
     y_limit = 100
-    number_of_cities_wanted = 20
+    number_of_cities_wanted = 25
     finishing_temperature = .01
     cooling_factor = .9999
     cites = city_list_generator(number_of_cities_wanted, x_limit, y_limit)
@@ -111,7 +133,8 @@ def main():
     print 'original distance is %f' % circuit_distance(cites)
 
     # plot of the original route
-    plot_route(cites)
+    plot_cities(cites,"Random Distribution of %i Cities" % len(cites))
+    plot_route(cites, "Random Route Between %i Cities" % len(cites))
 
     while temperature > finishing_temperature:
         temps.append(temperature)
@@ -122,10 +145,16 @@ def main():
 
     print 'final distance is %f' % circuit_distance(cites)
 
-    plt.plot(np.arange(iterations), temps)
-    plt.plot(np.arange(iterations), lengths)
-    plt.show()
-    plot_route(cites)
+    name_of_graph="Graph of Temperature and Length of Route vs Number of Iterations for %i Cities" % len(cites)
+    plt.plot(np.arange(iterations), temps, label="Temperature")
+    plt.plot(np.arange(iterations), lengths, label="Length of Route")
+    plt.xlabel("Iterations ")
+    plt.title(name_of_graph)
+    plt.legend(loc="best")
+    plt.savefig("%s.png" % name_of_graph)
+    plt.clf()
+
+    plot_route(cites, "Optimal Route Between %i Cities" % len(cites))
 
 
 if __name__ == "__main__":
